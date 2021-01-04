@@ -14,6 +14,7 @@ export function activate(context: vscode.ExtensionContext) {
 
         if(editor){
             const document = editor.document;
+            const selection = editor.selection
     
             // 現在開いているドキュメント全体の文字列を取得
             const firstLine = document.lineAt(0);
@@ -28,6 +29,8 @@ export function activate(context: vscode.ExtensionContext) {
             editor.edit(editBuilder => {
                 editBuilder.replace(textRange, replaced);
             });
+
+            editor.selection = selection;
         }
     });
 }
