@@ -39,40 +39,59 @@ export function deactivate() {}
 
 
 function formatVerilog(documentText:string) : string {
-    let formated:string = '';
+    let formatedText:string = '';
     let indent:number = 0;
     const lines:string[] = documentText.split('\n');
 
     for(const line of lines) {
-        // 行頭のインデントを削除
-        const temp:string = line.replace(/^[\s\t]+/g, '');
-
-        // 末尾の改行コードがあれば削除
-        const noIndentStr:string = temp.replace(/\r$/g, '');
-
-        // インデント減らす
-        if(noIndentStr.match(/end |end$|endmodule|\);/)) {
-            indent--;
-        }
-        if(indent < 0) {
-            indent = 0;
-        }
+        const trimedLine:string = TrimSpaceAndTab(line);
+        indent = GetThisLineIndent(trimedLine, indent);
 
         let indentSpace:string = '';
         for(let i = 0; i < indent; i++) {
             indentSpace += '    ';
         }
 
-        const replaced:string = indentSpace + noIndentStr;
-        formated += replaced + '\n';
-
-        // インデント増やす
-        if(noIndentStr.match(/module|begin|\);/)) {
-            indent++;
-        }
+        formatedText += indentSpace + trimedLine + '\n';
+        indent = GetNextLineIndent(trimedLine, indent);
     }
-    // 末尾に追加される不要な改行を削除
-    formated = formated.replace(/\n$/, '');
+    // テキストの最後に追加される不要な改行を削除
+    formatedText = formatedText.replace(/\n$/, '');
 
-    return formated;
+    return formatedText;
+}
+
+
+function TrimSpaceAndTab(line:string) : string{
+    const temp:string   = line.replace(/^[\s\t]+/g, '');
+    const trimed:string = temp.replace(/\r$/g, '');
+    return trimed;
+}
+
+
+function GetThisLineIndent(line:string, indent:number) : number {
+    let thisIndent = indent;
+
+    if(line.match(/end |end$|endmodule/)) {
+        thisIndent--;
+    }
+    if(line.match(/^\./)) {
+        thisIndent++;
+    }
+    if(indent < 0) {
+        thisIndent = 0;
+    }
+    return thisIndent;
+}
+
+function GetNextLineIndent(line:string, indent:number) : number {
+    let nextIndent = indent;
+
+    if(line.match(/^module|begin/)) {
+        nextIndent++;
+    }
+    if(line.match(/^\./)) {
+        nextIndent--;
+    }
+    return nextIndent;
 }
