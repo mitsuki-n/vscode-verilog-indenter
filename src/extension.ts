@@ -25,12 +25,14 @@ export function activate(context: vscode.ExtensionContext) {
             // インデント幅を整形する
             const replaced = formatVerilog(text);
     
-            // 現在開いているドキュメントの内容を書き換える
-            editor.edit(editBuilder => {
-                editBuilder.replace(textRange, replaced);
-            });
+            if(replaced !== text) {
+                // 現在開いているドキュメントの内容を書き換える
+                editor.edit(editBuilder => {
+                    editBuilder.replace(textRange, replaced);
+                });
 
-            editor.selection = selection;
+                editor.selection = selection;
+            }
         }
     });
 }
@@ -52,11 +54,11 @@ function formatVerilog(documentText:string) : string {
             indentSpace += '    ';
         }
 
-        formatedText += indentSpace + trimedLine + '\n';
+        formatedText += indentSpace + trimedLine + '\r\n';
         indent = GetNextLineIndent(trimedLine, indent);
     }
     // テキストの最後に追加される不要な改行を削除
-    formatedText = formatedText.replace(/\n$/, '');
+    formatedText = formatedText.replace(/\r\n$/, '');
 
     return formatedText;
 }
